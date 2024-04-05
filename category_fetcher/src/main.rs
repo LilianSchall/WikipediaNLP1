@@ -7,7 +7,7 @@ use std::{
     collections::HashMap,
     fs::File,
     io::{BufReader, Write},
-    path::Path
+    path::Path, time::Duration
 };
 
 mod wikipedia;
@@ -28,9 +28,9 @@ fn process_article(a: Article) -> (i32, Option<Vec<Category>>) {
     let url = reqwest::Url::parse_with_params(uri, params).unwrap();
     let url_string = url.to_string();
 
-    let mut server_response = reqwest::blocking::get(&url_string);
+    let mut server_response =reqwest::blocking::Client::new().get(&url_string).timeout(Duration::from_millis(1000)).send();
 
-    while (server_response.is_err()) {
+    while server_response.is_err() {
         println!("Got timedout for title: {}", a.title);
         std::thread::sleep(std::time::Duration::from_millis(100));
         server_response = reqwest::blocking::get(&url_string);
@@ -43,7 +43,6 @@ fn process_article(a: Article) -> (i32, Option<Vec<Category>>) {
     if response.as_ref().err().is_some() {
         return (-1, None);
     }
-    println!("Fetched categories for {}", a.title);
 
     let mut categories: Vec<Category> = Vec::new();
 
@@ -53,6 +52,7 @@ fn process_article(a: Article) -> (i32, Option<Vec<Category>>) {
         let page = wiki_response.query.pages[page_key].clone();
         categories = [categories, page.categories].concat();
     }
+    println!("Processed article: {}", a.title);
 
     (a.id, Some(categories))
 }
