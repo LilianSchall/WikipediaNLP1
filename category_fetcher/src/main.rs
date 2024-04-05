@@ -26,13 +26,24 @@ fn process_article(a: Article) -> (i32, Option<Vec<Category>>) {
     let uri = "https://en.wikipedia.org/w/api.php";
 
     let url = reqwest::Url::parse_with_params(uri, params).unwrap();
-    let body = reqwest::blocking::get(url).unwrap().text().unwrap();
+    let url_string = url.to_string();
+
+    let mut server_response = reqwest::blocking::get(&url_string);
+
+    while (server_response.is_err()) {
+        println!("Got timedout for title: {}", a.title);
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        server_response = reqwest::blocking::get(&url_string);
+    }
+
+    let body = server_response.unwrap().text().unwrap();
 
     let response: Result<WikipediaResponse, serde_json::Error> = serde_json::from_str(&body);
 
     if response.as_ref().err().is_some() {
         return (-1, None);
     }
+    println!("Fetched categories for {}", a.title);
 
     let mut categories: Vec<Category> = Vec::new();
 
@@ -42,8 +53,6 @@ fn process_article(a: Article) -> (i32, Option<Vec<Category>>) {
         let page = wiki_response.query.pages[page_key].clone();
         categories = [categories, page.categories].concat();
     }
-
-    println!("Processed Title: {}", a.title);
 
     (a.id, Some(categories))
 }
