@@ -49,4 +49,3 @@ class CustomTokenizer:
             raise AssertionError("Decode method can't be used for tokenizer of type " + self.type)
         return self.encoder.decode(content)
 
-
