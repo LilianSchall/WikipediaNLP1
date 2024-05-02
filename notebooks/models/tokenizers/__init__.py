@@ -39,7 +39,8 @@ class CustomTokenizer:
                 self.encoder = CustomEncoder(encode=sent_tokenize)
             case "byte":
                 self.encoder = CustomEncoder(encode=(lambda text: 
-                                                       [str(token) for token in (list(map(int, text.encode("utf-8"))))]))
+                                                       [str(token) for token in (list(map(int, text.encode("utf-8"))))]),
+                                             decode=(lambda encoded: "".join([chr(int(token)) for token in encoded])))
 
     def encode(self, content):
         return self.encoder.encode(content)
