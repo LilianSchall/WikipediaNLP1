@@ -36,19 +36,18 @@ class CustomTokenizer:
         self.type = type
         self.remove_stopwords = remove_stopwords
         self.to_lower = to_lower
-        match type:
-            case "tiktoken":
-                self.encoder = CustomEncoder(encoder_decoder=tiktoken.encoding_for_model("gpt-4"))
-            case "word":
-                self.encoder = CustomEncoder(encode=word_tokenize)
-            case "lemma":
-                self.encoder = CustomEncoder(encode=__lemmatize)
-            case "sentence":
-                self.encoder = CustomEncoder(encode=sent_tokenize)
-            case "byte":
-                self.encoder = CustomEncoder(encode=(lambda text: 
-                                                       [str(token) for token in (list(map(int, text.encode("utf-8"))))]),
-                                             decode=(lambda encoded: "".join([chr(int(token)) for token in encoded])))
+        if type == "tiktoken":
+            self.encoder = CustomEncoder(encoder_decoder=tiktoken.encoding_for_model("gpt-4"))
+        elif type == "word":
+            self.encoder = CustomEncoder(encode=word_tokenize)
+        elif type == "lemma":
+            self.encoder = CustomEncoder(encode=__lemmatize)
+        elif type == "sentence":
+            self.encoder = CustomEncoder(encode=sent_tokenize)
+        elif type == "byte":
+            self.encoder = CustomEncoder(encode=(lambda text: 
+                                                 [str(token) for token in (list(map(int, text.encode("utf-8"))))]),
+                                         decode=(lambda encoded: "".join([chr(int(token)) for token in encoded])))
 
     def encode(self, content: str):
         if self.to_lower:
