@@ -9,3 +9,4 @@ gensim
 mwparserfromhell
 tiktoken
 spacy
+scipy==1.10
